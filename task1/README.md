@@ -36,8 +36,8 @@ $ git submodule update --init 3rd_party/delfem2
 
    
 
-=== Paste the screen shot here`![](<image file name>)` ===
-
+=== Paste the screen shot here ===
+[task1_problem 1](task1_screenshot.PNG)
 
 
 ## Problem 2
@@ -45,6 +45,24 @@ $ git submodule update --init 3rd_party/delfem2
 Modify `main.cpp` to collide points with the circular obstacle in the middle (see around 92th line of the code). Just 4 or 5 lines of codes need to be modifiled. We assume that the **coefficient of restitution** is one.
 
 
-=== Paste the screen shot here`![](<image file name>)`  ===
+=== Paste the screen shot here  ===
+[task1_problem 2](task1_screenshot_collision.PNG)
 
+modified code:
 
+''' C++
+if( dist_from_center < 0.2 &&  dist_from_center > 0.19){ // collision with obstacle (inside and outside)
+        float norm[2] = {dx/dist_from_center, dy/dist_from_center }; // unit normal vector of the circle
+        float vnorm = p.velo[0]*norm[0] + p.velo[1]*norm[1]; // normal component of the velocity
+        ////////////////////////////
+        // write something below !
+        float vtan = p.velo[0]*norm[1] - p.velo[1]*norm[0]; // tangential component of the velocity
+        //rotated the vnorm and vtan around the z axis ccw R = [[normY normX],[-normX normY]]
+        // [vX_f,vY_f] = R*[vtan,-vnorm] 
+        p.velo[0] = vtan*norm[1] - vnorm*norm[0];   
+        p.velo[1] = -vtan*norm[0] - vnorm*norm[1];   
+        // Take a step in the new direction
+        p.pos[0] += dt*p.velo[0];
+        p.pos[1] += dt*p.velo[1];
+      }
+'''

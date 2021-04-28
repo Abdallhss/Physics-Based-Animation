@@ -5,6 +5,9 @@
 #include <random>
 #include <cstdlib>
 #include <cstdio>
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include<windows.h>
 
 // print out error
 static void error_callback(int error, const char* description){
@@ -73,7 +76,7 @@ void simulate(
       p.pos[1] = -p.pos[1];
       p.velo[1] = -p.velo[1];
     }
-    if( p.pos[0] > 1 ){ // left wall
+    if( p.pos[0] > 1 ){ // right wall
       p.pos[0] = 2-p.pos[0];
       p.velo[0] = -p.velo[0];
     }
@@ -85,15 +88,19 @@ void simulate(
       float dx = p.pos[0]-0.5f; // x-coord from center
       float dy = p.pos[1]-0.5f; // y-coord from center
       float dist_from_center = sqrt(dx*dx+dy*dy);
-      if( dist_from_center < 0.2 ){ // collision with obstacle
+      if( dist_from_center < 0.2 &&  dist_from_center > 0.19){ // collision with obstacle (inside and outside)
         float norm[2] = {dx/dist_from_center, dy/dist_from_center }; // unit normal vector of the circle
         float vnorm = p.velo[0]*norm[0] + p.velo[1]*norm[1]; // normal component of the velocity
         ////////////////////////////
         // write something below !
-//        p.velo[0] =
-//        p.velo[1] =
-//        p.pos[0] =
-//        p.pos[1] =
+        float vtan = p.velo[0]*norm[1] - p.velo[1]*norm[0]; // tangential component of the velocity
+        //rotated the vnorm and vtan around the z axis ccw R = [[normY normX],[-normX normY]]
+        // [vX_f,vY_f] = R*[vtan,-vnorm] 
+        p.velo[0] = vtan*norm[1] - vnorm*norm[0];   
+        p.velo[1] = -vtan*norm[0] - vnorm*norm[1];   
+        // Take a step in the new direction
+        p.pos[0] += dt*p.velo[0];
+        p.pos[1] += dt*p.velo[1];
       }
     }
   }
@@ -110,8 +117,10 @@ int main()
     aParticle.resize(N);
     for(auto & p : aParticle){
       // set position
+      // constrain points to inside circle
       p.pos[0] = dist01(rndeng);
       p.pos[1] = dist01(rndeng);
+      
       // set color
       delfem2::GetRGB_HSV(
           p.color[0], p.color[1], p.color[2],
@@ -146,6 +155,7 @@ int main()
     draw(aParticle);
     viewer.SwapBuffers();
     glfwPollEvents();
+    Sleep(10);
   }
   glfwDestroyWindow(viewer.window);
   glfwTerminate();
