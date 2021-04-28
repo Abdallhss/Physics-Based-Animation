@@ -50,7 +50,7 @@ Modify `main.cpp` to collide points with the circular obstacle in the middle (se
 
 modified code:
 
-''' C++
+```C++
 if( dist_from_center < 0.2 &&  dist_from_center > 0.19){ // collision with obstacle (inside and outside)
         float norm[2] = {dx/dist_from_center, dy/dist_from_center }; // unit normal vector of the circle
         float vnorm = p.velo[0]*norm[0] + p.velo[1]*norm[1]; // normal component of the velocity
@@ -65,4 +65,5 @@ if( dist_from_center < 0.2 &&  dist_from_center > 0.19){ // collision with obsta
         p.pos[0] += dt*p.velo[0];
         p.pos[1] += dt*p.velo[1];
       }
-'''
+```
+
