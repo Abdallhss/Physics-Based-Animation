@@ -136,6 +136,19 @@ void collision_detection(
       // write some codes here (probably 5 - 10 lines)
       // use the function "is_collide()" at line #102
       // ----------------------------------------------
+
+      // if the stack isnot empty, the latest element can be in collision with
+      // all current elements of the stack
+      if (size(stack) > 1){   // Check  stack is not empty
+        for (auto x : stack) //loop over the stack
+        { 
+          if (is_collide(aCircle[x],aCircle[ic0], rad)) // check collision
+          {
+            aCircle[x].is_collided = true;  // show collision
+            aCircle[ic0].is_collided = true; // show collision
+          }
+	      }
+      }
       stack.insert(ic0);
     }
     else{ // exit the range of the circle
