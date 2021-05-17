@@ -28,7 +28,7 @@ Run the program and take a screenshot image of the resulting window.
 Paste the screenshot below by editing this markdown document. 
 
 === paset screenshot here ===
-
+![task2_screenshot](task2_screenshot.PNG)
 
 
 ## Problem 2
@@ -39,8 +39,19 @@ Fill the code around line #90 to **analytically** compute the graiend and hessia
 Paste the screenshot image of the result below. 
 
 === paset screenshot here ===
+![task2_optimization](task2_optimization.PNG)
 
 
 
 
 
+modified code:
+```c++
+// write some codes below to compute gradient and hessian of the energy defined in line #60.
+    gradW[0] += 2*dx;       // dw/dx = d/dx(dx^2 + dy^2) = 2*dx
+    gradW[1] += 2*dy;       // dw/dy = d/dy(dx^2 + dy^2) = 2*dy
+    hessW[0][0] += 2;       // dw/dx2 = d/dx(2*dx) = 2
+    hessW[0][1] += 0;       // dw/dxdy = d/dy(2*dx) = 0
+    hessW[1][0] += 0;       // dw/dydx = d/dx(2*dy) = 0
+    hessW[1][1] += 2;       // dw/dy2 = d/dy(2*dy) = 2
+```
