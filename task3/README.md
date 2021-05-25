@@ -50,7 +50,7 @@ Fill the code around line #56 to compute the correct hessian of the energy (abou
 Paste the screenshot image of converged deformation below:
 
 == paste screenshot image here==
-![problem2](problem1_screenshot.PNG)
+![problem2](problem2_screenshot.PNG)
 
 
 
