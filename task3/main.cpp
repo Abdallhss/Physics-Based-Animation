@@ -55,11 +55,20 @@ DFM2_INLINE void WdWddW_Spring2(
     for(unsigned int jdim=0;jdim<ndim;++jdim) {
       // write some code below to compute the ddC.
       // ddC[ino][jno][ino][jno] means differentiation of C w.r.t. p[ino][idim] and then p[jno][jdim]
-
-//      ddC[0][0][idim][jdim] =
-//      ddC[0][1][idim][jdim] =
-//      ddC[1][0][idim][jdim] =
-//      ddC[1][1][idim][jdim] =
+      // C = ((ap[1][0] - ap[0][0])^2 + (ap[1][1] - ap[0][1])^2)^2 - Len
+      // Given Len is constant >> dC = [[-(ap[1][0] - ap[0][0]) , - (ap[1][1] - ap[0][1])],
+      //                                [(ap[1][0] - ap[0][0]) ,  (ap[1][1] - ap[0][1])]]/len
+      // taking the derivative to ap[0][0] yeilds 
+      // d/dp00(dC) = 1/len^2 *(len*[[1, 0],[-1, 0]] - dC*dC[0][0]/len)
+      // since dC is already normalized above, the eqs change to:
+      // d/dp00(dC) = ([[1, 0],[-1, 0]] - dC*dC[0][0])/len
+      // d/dp01(dC) = ([[0, 1],[0, -1]] - dC*dC[0][1])/len
+      // d/dp10(dC) = ([[-1, 0],[1, 0]] - dC*dC[1][0])/len
+      // d/dp11(dC) = ([[0, -1],[0, 1]] - dC*dC[1][1])/len
+      ddC[0][0][idim][jdim] =  ((1-2*idim)*(1-jdim) - dC[idim][jdim]*dC[0][0])/len;
+      ddC[0][1][idim][jdim] =  ((1-2*idim)*(jdim)   - dC[idim][jdim]*dC[0][1])/len;
+      ddC[1][0][idim][jdim] =  ((2*idim-1)*(1-jdim) - dC[idim][jdim]*dC[1][0])/len;
+      ddC[1][1][idim][jdim] =  ((2*idim-1)*(jdim)   - dC[idim][jdim]*dC[1][1])/len;
     }
   }
   //
@@ -75,7 +84,7 @@ DFM2_INLINE void WdWddW_Spring2(
         for (int jdim = 0; jdim < ndim; ++jdim) {
           ddW[ino][jno][idim][jdim] =
               + stiffness * dC[ino][idim] * dC[jno][jdim]
-              + stiffness * C * ddC[ino][jno][idim][jdim]; // ddW = k*dC*dC + k*C*ddC
+              + stiffness * C * ddC[ino][idim][jno][jdim]; // ddW = k*dC*dC + k*C*ddC  
         }
       }
     }

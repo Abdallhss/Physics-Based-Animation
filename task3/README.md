@@ -32,7 +32,7 @@ $ git submodule update --init 3rd_party/delfem2
 Build the program using `cmake`. Run the program and take a screenshot image of the window. (You will probably see some *undesirable* animation and that's OK). Paste the screenshot image below by editing this mark down document:
 
 === paste screenshot here ===
-
+![problem1](problem1_screenshot.PNG)
 
 
 
@@ -50,8 +50,41 @@ Fill the code around line #56 to compute the correct hessian of the energy (abou
 Paste the screenshot image of converged deformation below:
 
 == paste screenshot image here==
+![problem2](problem1_screenshot.PNG)
 
 
+
+modified code
+``` c++
+
+// C = ((ap[1][0] - ap[0][0])^2 + (ap[1][1] - ap[0][1])^2)^2 - Len
+      // Given Len is constant >> dC = [[-(ap[1][0] - ap[0][0]) , - (ap[1][1] - ap[0][1])],
+      //                                [(ap[1][0] - ap[0][0]) ,  (ap[1][1] - ap[0][1])]]/len
+      // taking the derivative to ap[0][0] yeilds 
+      // d/dp00(dC) = 1/len^2 *(len*[[1, 0],[-1, 0]] - dC*dC[0][0]/len)
+      // since dC is already normalized above, the eqs change to:
+      // d/dp00(dC) = ([[1, 0],[-1, 0]] - dC*dC[0][0])/len
+      // d/dp01(dC) = ([[0, 1],[0, -1]] - dC*dC[0][1])/len
+      // d/dp10(dC) = ([[-1, 0],[1, 0]] - dC*dC[1][0])/len
+      // d/dp11(dC) = ([[0, -1],[0, 1]] - dC*dC[1][1])/len
+      ddC[0][0][idim][jdim] =  ((1-2*idim)*(1-jdim) - dC[idim][jdim]*dC[0][0])/len;
+      ddC[0][1][idim][jdim] =  ((1-2*idim)*(jdim)   - dC[idim][jdim]*dC[0][1])/len;
+      ddC[1][0][idim][jdim] =  ((2*idim-1)*(1-jdim) - dC[idim][jdim]*dC[1][0])/len;
+      ddC[1][1][idim][jdim] =  ((2*idim-1)*(jdim)   - dC[idim][jdim]*dC[1][1])/len;
+```
+There was also a bug when evaluating the ddw
+``` c++
+ddW[ino][jno][idim][jdim] =
+              + stiffness * dC[ino][idim] * dC[jno][jdim]
+              + stiffness * C * ddC[ino][jno][idim][jdim]; // ddW = k*dC*dC + k*C*ddC
+``
+should become
+``` c++
+ddW[ino][jno][idim][jdim] =
+              + stiffness * dC[ino][idim] * dC[jno][jdim]
+              + stiffness * C * ddC[ino][idim][jno][jdim]; // ddW = k*dC*dC + k*C*ddC  
+        
+```
 
 
 
