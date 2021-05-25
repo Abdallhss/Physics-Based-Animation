@@ -77,7 +77,7 @@ There was also a bug when evaluating the ddw
 ddW[ino][jno][idim][jdim] =
               + stiffness * dC[ino][idim] * dC[jno][jdim]
               + stiffness * C * ddC[ino][jno][idim][jdim]; // ddW = k*dC*dC + k*C*ddC
-``
+```
 should become
 ``` c++
 ddW[ino][jno][idim][jdim] =
