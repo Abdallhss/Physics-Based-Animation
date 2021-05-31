@@ -27,7 +27,7 @@ $ git submodule update --init 3rd_party/delfem2
 Build the `main.cpp` using `cmake`. Run the program and take a screenshot image of the window. You will probably see some **highly distorted** mesh and that's OK. Paste the screenshot image below by editing this mark down document:
 
 === paste screenshot here ===
-
+![problem1](task5_problem1.PNG)
 
 
 
@@ -47,18 +47,24 @@ The one-ring neighbourhood of vertices are stored inside `Psup_Ind` and `Psup` i
 Write some code around line #31 in the `main.cpp`. **Once the implementation is successful, the energy should steadly decrease.** Paste the resulting screenshot image below. 
 
 === paste screenshot image here ===
-
-  
-
-
-
-
-
+![problem2](task5_problem2.PNG)
 
 ----
 
+### modified code:
 
-
+```c++
+// the center of gravity for a set of points with equal density
+// is the same as the geometric mean
+// p_center = sum(Ps)/n
+pos_new[0] = pos_new[0] + aXY[jp*2+0];
+pos_new[1] = pos_new[1] + aXY[jp*2+1];
+```
+and 
+```c++
+pos_new[0] = pos_new[0]/(aPsupInd[ip + 1] - aPsupInd[ip]);
+pos_new[1] = pos_new[1]/(aPsupInd[ip + 1] - aPsupInd[ip]);
+```
 
 
 
