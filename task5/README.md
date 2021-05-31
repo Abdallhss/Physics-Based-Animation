@@ -53,6 +53,7 @@ Write some code around line #31 in the `main.cpp`. **Once the implementation is 
 
 ### modified code:
 The center of gravity for a set of points with equal density is the same as the geometric mean
+
 <a href="https://www.codecogs.com/eqnedit.php?latex=p_{center}&space;=&space;\frac{1}{n}\sum&space;p" target="_blank"><img src="https://latex.codecogs.com/gif.latex?p_{center}&space;=&space;\frac{1}{n}\sum&space;p" title="p_{center} = \frac{1}{n}\sum p" /></a>
 ```c++
 pos_new[0] = pos_new[0] + aXY[jp*2+0];
