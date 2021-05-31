@@ -30,7 +30,7 @@ void GaussSeidelRelaxation(
     for (auto ipsup = aPsupInd[ip]; ipsup < aPsupInd[ip + 1]; ++ipsup) {
       const unsigned int jp = aPsup[ipsup]; // index of point neighbouring ip
       // the center of gravity for a set of points with equal density
-      // is the same as the geometric mean
+      // is the same as the Arithmetic mean
       // p_center = sum(Ps)/n
       pos_new[0] = pos_new[0] + aXY[jp*2+0];
       pos_new[1] = pos_new[1] + aXY[jp*2+1];
