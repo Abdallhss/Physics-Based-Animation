@@ -109,14 +109,34 @@ void Optimize(
         matA(ip0 * 2 + idim, ip1 * 2 + jdim) += ddW[0][1][idim][jdim];
         matA(ip1 * 2 + idim, ip0 * 2 + jdim) += ddW[1][0][idim][jdim];
         matA(ip1 * 2 + idim, ip1 * 2 + jdim) += ddW[1][1][idim][jdim];
+        // Add the constrain (- lambda*ddG) to first diagonal element
+        // matA(0:2*np,0:2*np) = ddW - lambda*ddG
+        matA(ip0 * 2 + idim, ip0 * 2 + jdim) -= lambda*ddG[0][0][idim][jdim];
+        matA(ip0 * 2 + idim, ip1 * 2 + jdim) -= lambda*ddG[0][1][idim][jdim];
+        matA(ip1 * 2 + idim, ip0 * 2 + jdim) -= lambda*ddG[1][0][idim][jdim];
+        matA(ip1 * 2 + idim, ip1 * 2 + jdim) -= lambda*ddG[1][1][idim][jdim];
       }
+      // Add the constraint (-dG) to off-diagonal matrix element
+      // matA(0:2*np,2*np) = -dG
+      matA(ip0 * 2 + idim, np * 2) -= dG[0][idim];
+      matA(ip1 * 2 + idim, np * 2) -= dG[1][idim];
+      // matA(2*np,0:2*np) = -dG
+      matA(np * 2 , ip0 * 2 + idim) -= dG[0][idim];
+      matA(np * 2 , ip1 * 2 + idim) -= dG[1][idim];
+
       vecB(ip0*2+idim) += dW[0][idim];
       vecB(ip1*2+idim) += dW[1][idim];
+      // Add the constraint (-lambda*dG) to the vector B
+      // matA(0:2*np) = dW - lambda*dG
+      vecB(ip0*2+idim) -= lambda*dG[0][idim];
+      vecB(ip1*2+idim) -= lambda*dG[1][idim];
       // write something around here to put the areal constraint
       // Note that the "np*2"-th DoF is for the Lagrange multiplier
     }
   }
-
+  // Set last vector element to (-g(x))
+  // Sum of areas is zero >> sum(G(x)) = 1 >> g(x) = 1 - sum(G(x))
+  vecB(np*2) = -(G_sum - 1);
   // no further modification below
   // ---------------
 
