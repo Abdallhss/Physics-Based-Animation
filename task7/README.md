@@ -31,7 +31,7 @@ $ git submodule update --init 3rd_party/delfem2
 Build the `main.cpp` using `cmake`. Run the program and take a screenshot image of the window.  Paste the screenshot image below by editing this mark down document:
 
 === paste screenshot here ===
-
+![task7_problem1](task7_problem1.PNG)
 
 
 
@@ -51,19 +51,49 @@ The following slides **may be** useful for this assignments:
 
 Report the energy after convergence: 
 
-- converged energy = ?????
+- converged energy = 100
 
+This is the sum of a squared distance of 1 between 100 points
 
 
 Paste the resulting screenshot image below:
 
 === paste screenshot image here ===
+![task7_problem2](task7_problem2.PNG)
 
   
+  ### modified code
+  ```c++
+  dW = -2*(Rp).cross(q);
+  ddW = -2*(q*Rp.transpose() - Rp.dot(q)*Eigen::Matrix3d::Identity());
+  ```
 
-
-
-
+  ### Approach
+```c++
+  // compute gradient and hessian of the energy below.
+  // The squared norm (W) = ||Rp-q|| = (Rp-q).(Rp-q) 
+  // W = Rp.Rp - 2*Rp.q + q.q 
+  // Rp.Rp = ||Rp|| = ||p|| = Constant && q.q = ||q|| = Constant
+  // R(w) = exp(skew(w))*R0
+  // w = [w1,w2,w3]
+  // skew(w) = [[0 -w3 w2]
+  //            [w3 0 -w1]
+  //            [-w2 w1 0]]
+  // We define dw1, dw2, dw3 as:
+  // dw1 = d/dw1(skew(w)) = [[0 0 0],[0 0 -1],[0 1 0]] = skew([1,0,0])
+  // dw2 = d/dw2(skew(w)) = [[0 0 1],[0 0 0],[-1 0 0]] = skew([0,1,0])
+  // dw3 = d/dw3(skew(w)) = [[0 -1 0],[1 0 0],[0 0 0]] = skew([0,0,1])
+  // The first derivative of W with respect to first component dW_dw1
+  // dW_dw1 = 0 + d/dw1(-2*(R(w)*p).q) + 0 = (dw1*Rp).q
+  // Given: skew(U)*V = U x V  -- cross product
+  // Given: (b x c).a = (a x c).b = (a x b).c
+  // w1 = [1,0,0] && w2 = [0,1,0] && w3 = [0,0,1] 
+  // dW_dw1 = -2*(w1 x Rp).q = -2* (Rp x q).w1
+  // dW_dw2 = -2* (Rp x q).w2
+  // dW_dw3 = -2* (Rp x q).w3
+  // Combine all in one equation
+  // dW = -2* (Rp x q).[w1 w2 w3] = -2* (Rp x q).I = -2* (Rp x q)
+```
 
 
 ----

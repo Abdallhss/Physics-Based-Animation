@@ -69,9 +69,41 @@ void WdWddW_Rotation(
   const Eigen::Vector3d Rp = R*p;
   W = (Rp-q).squaredNorm();
   // compute gradient and hessian of the energy below.
-  // dW =
-  // ddW =
-}
+  // The squared norm (W) = ||Rp-q|| = (Rp-q).(Rp-q) 
+  // W = Rp.Rp - 2*Rp.q + q.q 
+  // Rp.Rp = ||Rp|| = ||p|| = Constant && q.q = ||q|| = Constant
+  // R(w) = exp(skew(w))*R0
+  // w = [w1,w2,w3]
+  // skew(w) = [[0 -w3 w2]
+  //            [w3 0 -w1]
+  //            [-w2 w1 0]]
+  // We define dw1, dw2, dw3 as:
+  // dw1 = d/dw1(skew(w)) = [[0 0 0],[0 0 -1],[0 1 0]] = skew([1,0,0])
+  // dw2 = d/dw2(skew(w)) = [[0 0 1],[0 0 0],[-1 0 0]] = skew([0,1,0])
+  // dw3 = d/dw3(skew(w)) = [[0 -1 0],[1 0 0],[0 0 0]] = skew([0,0,1])
+  // The first derivative of W with respect to first component dW_dw1
+  // dW_dw1 = 0 + d/dw1(-2*(R(w)*p).q) + 0 = (dw1*Rp).q
+  // Given: skew(U)*V = U x V  -- cross product
+  // Given: (b x c).a = (a x c).b = (a x b).c
+  // w1 = [1,0,0] && w2 = [0,1,0] && w3 = [0,0,1] 
+  // dW_dw1 = -2*(w1 x Rp).q = -2* (Rp x q).w1
+  // dW_dw2 = -2* (Rp x q).w2
+  // dW_dw3 = -2* (Rp x q).w3
+  // Combine all in one equation
+  // dW = -2* (Rp x q).[w1 w2 w3] = -2* (Rp x q).I = -2* (Rp x q)
+  dW = -2*(Rp).cross(q);
+
+  // Similiarly the second derivative is calculated as:
+  // dW_dwi_dwj = -2*(dwj*dwi*Rp).q = -2*(wj x (wi x Rp)).q
+  // dW_dwi_dwj = -2*((wi x Rp) x q).wj
+  // adding all components of dwi
+  // ddWi = -2*((wi x Rp) x q)
+  // Given: (a x b) x c) = (a.c)*b - (b.c)*a
+  // ddWi = -2*((wi.q)Rp - (Rp.q)wi)
+  // ddW = -2*((q O Rp) - (Rp.q)*I))
+  ddW = -2*(q*Rp.transpose() - Rp.dot(q)*Eigen::Matrix3d::Identity());
+
+} 
 
 /**
  * optimize the rotation matrix such that the sum of squared distance
@@ -103,6 +135,8 @@ void OptimizeRotation(
     dW += dw0;
     ddW += ddw0;
   }
+  std::cout << "ddW: " << ddW << std::endl;
+
   ddW += 5.e+3*Eigen::Matrix3d::Identity(); // damp for animation
   std::cout << "total energy: " << W << std::endl;
   Eigen::Vector3d dt = (-ddW.inverse())*dW; // rotation vector for update computed by Newton method
