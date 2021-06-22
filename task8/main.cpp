@@ -106,13 +106,16 @@ void AnimationByEnergyMinimization(
   const unsigned int np = nDof/2; // number of points
   // make tentative position aXYt = aXY + dt*aUV
   std::vector<double> aXYt = aXY;
+  // Set the position to the temporary position
+  // Optimize the energy starting from the temporary position not the original position
   for(unsigned int i=0;i<nDof;++i){
-    aXYt[i] += dt*aUV[i];
+    aXY[i] += dt*aUV[i];
   }
   Eigen::MatrixXd hessW(nDof,nDof); // hessian matrix
   Eigen::VectorXd gradW(nDof); // gradient vector
   hessW.setZero();
   gradW.setZero();
+  //double W = 0;
   for(int il=0;il<aLine.size()/2;++il){ // loop over springs
     const unsigned int ip0 = aLine[il*2+0]; // index of point0
     const unsigned int ip1 = aLine[il*2+1]; // index of point1
@@ -124,6 +127,7 @@ void AnimationByEnergyMinimization(
     WdWddW_Spring2(
         w,dw,ddw,
         ap,Len,stiffness);
+    //W += w;
     // merge gradient
     for(unsigned int ino=0;ino<2;++ino) {
       unsigned int ip = aLine[il*2+ino];
@@ -146,10 +150,19 @@ void AnimationByEnergyMinimization(
   for(unsigned int ip=0;ip<np;++ip) {
     gradW(ip*2+0) -= mass_point*gravity[0];
     gradW(ip*2+1) -= mass_point*gravity[1];
+  //W -= mass_point*gravity[0]*aXY[ip*2+0] + mass_point*gravity[1]*aXY[ip*2+1];
   }
+  //std::cout << "energy of the system " << W << std::endl;
   // add the inertia effect below
   for(unsigned int i=0;i<nDof;++i){
-  // hessW(i,i) +=
+    // The energy of system E(x) = W(x) + ((x-Xi)^T M (x-Xi))/dt^2
+    // Given M is symmetric matrix
+    // dE = dW + 2/dt^2*((x-Xi)^T M)
+    // if we estimate gradient at Xi dE = dW
+    // gradW(i) += 0;
+    // ddE = ddW + 2*M/dt^2
+    hessW(i,i) += 2*mass_point/(dt*dt);
+    
   }
   // adding boundary condition
   for(unsigned int i=0;i<nDof;++i){
@@ -164,8 +177,16 @@ void AnimationByEnergyMinimization(
   Eigen::VectorXd update = lu.solve(gradW); // solve matrix
   // modify velocity and position update below.
   for(unsigned int i=0;i<nDof;++i){
-//    aUV[i] =
+    // E is minimized by updating x using netwon's method
+    // x(t+1) = x(t) - dE/ddE 
+    // define:   update = dE/ddE
+    // x(t+1) = x(t) - update
+    // Set the velocity v = (x(t+1) - x(t))/dt 
+    // v = (x(t) - update - x(t))/dt = -update/dt
+    aUV[i] = -update(i)/dt;
     aXY[i] = aXY[i]-update(i);
+    // Reiterate with updated position and velocity
+
   }
 
 }
@@ -227,6 +248,7 @@ int main()
   std::vector<int> aBCFlag;
   SettingUpSimulation(aXY,aLine,aBCFlag);
   const std::vector<double> aXY0 = aXY; // initial position
+  // Use release mode for faster animation
   const double dt = 0.05;
   const double gravity[2] = {0., -1.0};
   const double stiffness = 3.0e+3;

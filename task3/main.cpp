@@ -56,10 +56,9 @@ DFM2_INLINE void WdWddW_Spring2(
       // write some code below to compute the ddC.
       // ddC[ino][jno][idim][jdim] means differentiation of C w.r.t. p[ino][idim] and then p[jno][jdim]
 
-//      ddC[0][0][idim][jdim] =
-//      ddC[0][1][idim][jdim] =
-//      ddC[1][0][idim][jdim] =
-//      ddC[1][1][idim][jdim] =
+      const double t = (double(idim == jdim) - u01[idim] * u01[jdim]) / len;
+      ddC[0][0][idim][jdim] = ddC[1][1][idim][jdim] = t;
+      ddC[0][1][idim][jdim] = ddC[1][0][idim][jdim] = -t;
     }
   }
   //
@@ -221,9 +220,9 @@ int main()
   std::vector<int> aBCFlag;
   SettingUpSimulation(aXY,aLine,aBCFlag);
   const std::vector<double> aXY0 = aXY; // initial position
-  const double gravity[2] = {0., -10.0};
-  const double stiffness = 1.0e+4;
-  const double mass_point = 1.0;
+  const double gravity[2] = {0., -1.0};
+  const double stiffness = 3.0e+3;
+  const double mass_point = 10.0;
   //
   delfem2::glfw::CViewer2 viewer;
   {
