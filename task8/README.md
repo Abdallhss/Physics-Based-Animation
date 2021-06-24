@@ -63,7 +63,7 @@ Paste the screenshot image of the animation below:
 ```c++
 // Set the position to the temporary position
 // Optimize the energy starting from the temporary position not the original position
-
+// X(t) = x(t) + dt*aUV
  aXY[i] += dt*aUV[i];
 ```
 
@@ -81,12 +81,13 @@ hessW(i,i) += 2*mass_point/(dt*dt);
 #### Position and Velocity Update
 ```c++
 // E is minimized by updating x using netwon's method
-// x(t+1) = x(t) - dE/ddE 
+// x(t+1) = X(t) - dE/ddE 
 // define:   update = dE/ddE
-// x(t+1) = x(t) - update
+// X(t) = x(t) + dt*aUV
+// x(t+1) = X(t) - update = x(t) + dt*aUV - update
 // Set the velocity v = (x(t+1) - x(t))/dt 
-// v = (x(t) - update - x(t))/dt = -update/dt
-aUV[i] = -update(i)/dt;
+// v = (x(t) + dt*aUV  - update - x(t))/dt = aUV -update/dt
+aUV[i] = aUV[i]-update(i)/dt;
 aXY[i] = aXY[i]-update(i);
 // Reiterate with updated position and velocity
 ```

@@ -109,6 +109,7 @@ void AnimationByEnergyMinimization(
   // Set the position to the temporary position
   // Optimize the energy starting from the temporary position not the original position
   for(unsigned int i=0;i<nDof;++i){
+    // X(t) = x(t) + dt*aUV
     aXY[i] += dt*aUV[i];
   }
   Eigen::MatrixXd hessW(nDof,nDof); // hessian matrix
@@ -150,7 +151,7 @@ void AnimationByEnergyMinimization(
   for(unsigned int ip=0;ip<np;++ip) {
     gradW(ip*2+0) -= mass_point*gravity[0];
     gradW(ip*2+1) -= mass_point*gravity[1];
-  //W -= mass_point*gravity[0]*aXY[ip*2+0] + mass_point*gravity[1]*aXY[ip*2+1];
+  //wW -= mass_point*gravity[0]*aXY[ip*2+0] + mass_point*gravity[1]*aXY[ip*2+1];
   }
   //std::cout << "energy of the system " << W << std::endl;
   // add the inertia effect below
@@ -178,12 +179,13 @@ void AnimationByEnergyMinimization(
   // modify velocity and position update below.
   for(unsigned int i=0;i<nDof;++i){
     // E is minimized by updating x using netwon's method
-    // x(t+1) = x(t) - dE/ddE 
+    // x(t+1) = X(t) - dE/ddE 
     // define:   update = dE/ddE
-    // x(t+1) = x(t) - update
+    // X(t) = x(t) + dt*aUV
+    // x(t+1) = X(t) - update = x(t) + dt*aUV - update
     // Set the velocity v = (x(t+1) - x(t))/dt 
-    // v = (x(t) - update - x(t))/dt = -update/dt
-    aUV[i] = -update(i)/dt;
+    // v = (x(t) + dt*aUV  - update - x(t))/dt = aUV -update/dt
+    aUV[i] = aUV[i]-update(i)/dt;
     aXY[i] = aXY[i]-update(i);
     // Reiterate with updated position and velocity
 
