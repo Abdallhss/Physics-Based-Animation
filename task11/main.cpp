@@ -57,7 +57,47 @@ void InertiaTensor(
     };
     const double area = (ap[1]-ap[0]).cross(ap[2]-ap[0]).norm()/2; // area of triangle
     // write some code below to compute inertia tensor
+    // Inertia Matrix is defines as Imat = -sum(mass*skew(x)^2)
+    // For a density of 1, mass is equivelant to volume (area)
+    // Imat = -sum(area*skew(x)^2)
+    // Since we have the center of the mass at the origin, and applying 
+    // parllel axis therom, We can sum over all trianglar meshes, and integrate over the triangle of each mesh
+    // We then write Imat = - sum(Imat_i)
+    // Imat_i = area_integral_over_triangle(skew(x)^2) 
+    // Given: skew(x)^2 = x.outer(x) - x.dot(x.T)*I
+    // and x can be written as tringular interpelation as:
+    // x = L1*P1 + L2*P2 + L3*P3
+    // skew(x)^2 = (L1*P1 + L2*P2 + L3*P3).outer(L1*P1 + L2*P2 + L3*P3) -
+    //             (L1*P1 + L2*P2 + L3*P3).dot(L1*P1 + L2*P2 + L3*P3)*I
+    // Using the distributive property
+    // skew(x)^2 = L1^2(P1.outer(P1) - P1.dot(P1)*I) +
+    //             L1L2(P1.outer(P2) - P1.dot(P2)*I) +
+    //             L1L3(P1.outer(P3) - P1.dot(P3)*I) +
+    //             L2L1(P2.outer(P1) - P2.dot(P1)*I) +
+    //             L2^2(P2.outer(P2) - P2.dot(P2)*I) +
+    //             L2L3(P2.outer(P3) - P2.dot(P3)*I) +
+    //             L3L1(P3.outer(P1) - P3.dot(P1)*I) +
+    //             L3L2(P3.outer(P2) - P3.dot(P2)*I) +
+    //             L3^2(P3.outer(P3) - P3.dot(P3)*I)
+    // Integrating the skew, the terms "Pi.outer(Pj) - Pi.dot(Pj)*I" is constant
+    // and comes out of the integral
+    // The integral over intgral of Li^2 = 1/6*area
+    // The integral over intgral of LiLj = 1/12*area
+    // We then iterate and sum over these terms for each set of points of a mesh.
+    for(unsigned int i=0;i<3;++i){
+      for(unsigned int j=0;j<3;++j){
+        if (i == j){
+          // The integral over intgral of Li^2 = 1/6*area
+          Imat -= (ap[i]*ap[j].transpose() - ap[i].dot(ap[j])*Eigen::Matrix3d::Identity())*area/6;
+        } 
+        else{
+          // The integral over intgral of LiLj = 1/12*area
+          Imat -= (ap[i]*ap[j].transpose() - ap[i].dot(ap[j])*Eigen::Matrix3d::Identity())*area/12;
+        };
+      };
+    };
   }
+
 }
 
 /**
