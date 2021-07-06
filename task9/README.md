@@ -32,7 +32,7 @@ Compile the `main.cpp` using the `CMakeLists.txt`, run the program and take a sc
 Paste the image below.
 
 === paste screenshot here ===
-
+![task9_problem1](task9_problem1.PNG)
 
 
 ## Problem 2
@@ -44,6 +44,7 @@ The edits should be necessary only around line #123.
 Paste the screenshot image of the program once it is finished.
 
 === paste screenshot here ===
+![task9_problem2](task9_problem2.PNG)
 
 
 ## Material 
@@ -62,6 +63,54 @@ The following slides may be useful
 
 
 
+
+### Modified Code:
+
+```c++
+// Evaluate the center of gravity of rest position and current position
+// Pcg = sum(wi*pi)/sum(wi)
+// Initialize zero vectors
+//tcg: the center of tentative shape
+Eigen::Vector2f tcg=Eigen::Vector2f::Zero();
+//Tcg: the center of rest shape
+Eigen::Vector2f Tcg=Eigen::Vector2f::Zero();
+// Intialize total mass to zero
+double amSum = 0;
+// Loop over the corners of each quad, and evalute the sum(wi*pi)
+for(unsigned int i=0;i<4;++i){
+    tcg += am[i]*ap[i];
+    Tcg += am[i]*aq[i];
+    amSum += am[i];
+};
+// divide by sum of weights
+tcg = tcg/amSum;
+Tcg = Tcg/amSum;
+
+// Find the optimum rotation matrix (Ropt) for rigid transformation
+// BA = sum(wi*(api - tcg).outer(aqi - Tcg))
+// Initialize BA matrix to zero
+Eigen::Matrix2f BA=Eigen::Matrix2f::Zero();
+// Loop over the corners of the quad and evaluate the sum
+for(unsigned int i=0;i<4;++i){
+    BA += am[i]*((ap[i]-tcg)*(aq[i]-Tcg).transpose());
+}
+// Get the Singular Value Decomposition (SVD) of BA
+// Ropt = U*V.T
+Eigen::JacobiSVD<Eigen::Matrix2f> svd(BA, Eigen::ComputeFullU | Eigen::ComputeFullV);
+Eigen::Matrix2f Ropt = svd.matrixU()*svd.matrixV().transpose();
+// topt = tcg - Ropt*Tcg
+Eigen::Vector2f topt = tcg - Ropt*Tcg;
+
+// Update the position of the tentative corner with same energy transformation
+// X_tentative = Ropt*X_rest + topt
+// Loop over the corners of the quad
+for(unsigned int i=0;i<4;++i){
+    Eigen::Vector2f XYopt =  Ropt*aq[i] + topt ;
+    aXYt[aQuad[iq*4+i]*2 + 0] = XYopt[0];
+    aXYt[aQuad[iq*4+i]*2 + 1]  = XYopt[1];
+};
+
+```
 
 
 
